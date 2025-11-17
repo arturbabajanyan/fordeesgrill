@@ -1,0 +1,225 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Resto — Online Ordering</title>
+<link rel="stylesheet" href="styles-light.css">
+</head>
+<body>
+<header>
+  <div class="container header-bar">
+    <div class="brand">
+      <div class="dot"></div>
+      <h1 id="restoName">Resto — Online Ordering</h1>
+      <span class="badge" id="openBadge">Open</span>
+    </div>
+    <div class="header-actions">
+      <button class="icon-btn" id="btnAdmin">Admin</button>
+      <button class="icon-btn" id="btnAuth"><span id="authLabel">Sign In</span></button>
+      <button class="icon-btn" id="btnCart">Cart <span class="pill" id="cartCount">0</span></button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="main">
+    <!-- Left: Cart -->
+    <aside class="sidebar">
+      <div class="card">
+        <div class="cart-header">
+          <div><b>Your Cart</b></div>
+          <button class="btn small" id="btnClearCart">Clear</button>
+        </div>
+        <div class="cart-items" id="cartList"></div>
+        <div class="cart-total" id="cartTotals"></div>
+        <div class="checkout">
+          <div class="field">
+            <label for="orderType">Order Type</label>
+            <select id="orderType">
+              <option value="pickup">Pickup</option>
+              <option value="delivery">Delivery</option>
+            </select>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="full accent" id="btnCheckout">Checkout</button>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Right: Menu -->
+    <section>
+      <div class="card" style="padding:12px;margin-bottom:12px">
+        <div class="toolbar">
+          <div class="search">
+            <input id="searchInput" placeholder="Search menu… (e.g., burger, fries, cola)"/>
+          </div>
+          <div class="chips" id="chipRow"></div>
+        </div>
+      </div>
+
+      <div class="menu" id="menuList"></div>
+    </section>
+  </div>
+</div>
+
+<footer>
+  © <span id="year"></span> <span id="restoNameFooter">Resto</span>. Demo build — no payments processed.
+</footer>
+
+<!-- Auth Modal -->
+<div class="overlay" id="authOverlay">
+  <div class="dialog">
+    <h3 id="authTitle">Sign In</h3>
+    <div class="row">
+      <div class="field"><label>Email</label><input id="authEmail" type="email" placeholder="you@example.com"/></div>
+      <div class="field"><label>Password</label><input id="authPass" type="password" placeholder="••••••••"/></div>
+    </div>
+    <div class="row" id="nameRow" style="display:none;margin-top:8px">
+      <div class="field"><label>Full Name</label><input id="authName" placeholder="Your name"/></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="toggleAuthMode">Need an account? Sign Up</button>
+      <div style="flex:1"></div>
+      <button class="btn" id="btnAuthCancel">Cancel</button>
+      <button class="btn accent" id="btnAuthConfirm">Continue</button>
+    </div>
+    <hr class="sep"/>
+    <div class="row">
+      <div class="muted">Admin? Use the <b>Admin</b> button in the header.</div>
+    </div>
+  </div>
+</div>
+
+<!-- Admin Modal -->
+<div class="overlay" id="adminOverlay">
+  <div class="dialog" id="adminGate">
+    <h3>Admin Login</h3>
+    <div class="row">
+      <div class="field"><label>Email</label><input id="adminEmail" type="email" placeholder="admin@demo.local"/></div>
+      <div class="field"><label>Password</label><input id="adminPass" type="password" placeholder="••••••••"/></div>
+    </div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnAdminCancel">Cancel</button>
+      <div style="flex:1"></div>
+      <button class="btn accent" id="btnAdminLogin">Log In</button>
+    </div>
+    <hr class="sep"/>
+    <div class="muted">Default: <code>admin@demo.local</code> / <code>Admin123!</code> — change it in <b>Users</b>.</div>
+  </div>
+
+  <div class="dialog" id="adminApp" style="display:none">
+    <div class="row" style="align-items:center;justify-content:space-between">
+      <h3>Admin Dashboard</h3>
+      <div class="row">
+        <button class="btn" id="btnAdminLogout">Log Out</button>
+        <button class="btn" id="btnCloseAdmin">Close</button>
+      </div>
+    </div>
+    <div class="tabs" id="adminTabs">
+      <div class="tab active" data-tab="items">Items</div>
+      <div class="tab" data-tab="categories">Categories</div>
+      <div class="tab" data-tab="orders">Orders</div>
+      <div class="tab" data-tab="settings">Settings</div>
+      <div class="tab" data-tab="users">Users</div>
+    </div>
+
+    <!-- Items -->
+    <div class="admin-panel" id="tab-items">
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn accent" id="btnAddItem">Add Item</button>
+        <div class="muted">Click a cell to edit. Toggle <b>Available</b> to show/hide on menu.</div>
+      </div>
+      <table class="table" id="itemsTable">
+        <thead><tr>
+          <th>Image</th><th>Name</th><th>Category</th><th>Price</th><th>Available</th><th>Actions</th>
+        </tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Categories -->
+    <div class="admin-panel" id="tab-categories" style="display:none">
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn accent" id="btnAddCat">Add Category</button>
+        <div class="muted">Reorder by editing the <b>Order</b> value.</div>
+      </div>
+      <table class="table" id="catTable">
+        <thead><tr><th>Name</th><th>Order</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Orders -->
+    <div class="admin-panel" id="tab-orders" style="display:none">
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn" id="btnClearOrders">Clear All</button>
+      </div>
+      <table class="table" id="ordersTable">
+        <thead><tr><th>#</th><th>When</th><th>Customer</th><th>Type</th><th>Total</th><th>Items</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <!-- Settings -->
+    <div class="admin-panel" id="tab-settings" style="display:none">
+      <div class="row">
+        <div class="field"><label>Restaurant Name</label><input id="setName"/></div>
+        <div class="field"><label>Tax Rate (%)</label><input id="setTax" type="number" step="0.01"/></div>
+        <div class="field"><label>Currency</label><input id="setCurrency" placeholder="$"/></div>
+        <div class="field"><label>Delivery Fee</label><input id="setDelivery" type="number" step="0.01"/></div>
+      </div>
+      <div class="row" style="margin-top:8px">
+        <button class="btn accent" id="btnSaveSettings">Save Settings</button>
+      </div>
+    </div>
+
+    <!-- Users -->
+    <div class="admin-panel" id="tab-users" style="display:none">
+      <div class="row" style="margin-bottom:8px">
+        <button class="btn accent" id="btnAddUser">Add User</button>
+        <div class="muted">Roles: <b>admin</b> or <b>user</b>. Passwords stored with SHA‑256 (demo only).</div>
+      </div>
+      <table class="table" id="usersTable">
+        <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Actions</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- Item Modal -->
+<div class="overlay" id="itemOverlay">
+  <div class="dialog">
+    <h3 id="itemTitle">Add to Order</h3>
+    <div class="row">
+      <img id="itemImg" alt="" style="width:140px;height:120px;border-radius:12px;border:1px solid #223143;background:#09121a;object-fit:cover"/>
+      <div style="flex:1">
+        <div class="muted" id="itemCat"></div>
+        <div><b id="itemPrice"></b></div>
+        <p class="muted" id="itemDesc" style="margin-top:6px"></p>
+        <div class="row" style="align-items:center;margin-top:10px">
+          <div>Qty</div>
+          <div class="qty"><button id="qtyMinus">-</button><span id="qtyVal">1</span><button id="qtyPlus">+</button></div>
+          <div style="flex:1"></div>
+          <div><b>Total: <span id="itemTotal">$0.00</span></b></div>
+        </div>
+      </div>
+    </div>
+    <div id="optWrap"></div>
+    <div class="row" style="margin-top:10px">
+      <button class="btn" id="btnCloseItem">Cancel</button>
+      <div style="flex:1"></div>
+      <button class="btn accent" id="btnAddToCart">Add to Cart</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script src="index.js"></script>
+</body>
+</html>
